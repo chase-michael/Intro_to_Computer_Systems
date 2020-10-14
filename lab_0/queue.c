@@ -57,16 +57,18 @@ void q_free(queue_t *q)
  */
 bool q_insert_head(queue_t *q, char *s)
 {
-    if (q == NULL) return false;
+    if (q == NULL || s == NULL) return false;
+    printf("%s\n", s);
     
     /* Make a new node */
     list_ele_t *newh = malloc(sizeof(list_ele_t));
     if (newh == NULL) return false;
     
     /* Point node value to new char array, and copy over input char array. */
-    newh->value = malloc(strlen(s) * sizeof(char));
+    newh->value = malloc((strlen(s)+1) * sizeof(char));
     if (newh->value == NULL) return false;
     strcpy(newh->value, s);
+    newh->value[strlen(s)] = '\0';
     
     /* If q has head, put it after the new node */
     if (q->head != NULL) {
@@ -134,15 +136,28 @@ bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
     if (q == NULL || q->head == NULL) return false;
     
     if (sp != NULL) {
-        strncpy(sp, q->head->value, (bufsize-2));
-        sp[(bufsize-1)] = '\0';
+        int len = strlen(q->head->value);
+        int copySize;
+        if (len < bufsize-1) copySize = len;
+        else copySize = bufsize-1;
+        
+        strncpy(sp, q->head->value, copySize);
+        sp[(copySize)] = '\0';
+        printf("Freeing value %s\n", q->head->value);
+        free(q->head->value);
     }
     
-    free(q->head->value);
+    // printf("%s\n", sp);
     list_ele_t *temp = q->head;
-    q->head = q->head->next;
+    if (q->head->next != NULL) {
+        printf("Next isn't null\n");
+        q->head = q->head->next;
+    }
     free(temp);
+    printf("Freed\n");
+    printf("Size: %i\n", q->size);
     q->size--;
+    printf("SIZE changed\n");
     return true;
 }
 
